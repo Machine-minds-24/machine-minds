@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream App Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+        }
+
+        #record_button {
+            margin-bottom: 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #record_button:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="submit"] {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center><h2>Welcome to AI WHISPERER</h2></center>
+        <h1>Tell us about your dream app</h1>
+        <form method="post" enctype="multipart/form-data" id="dream_app_form">
+            {% csrf_token %}
+            <textarea name="description" rows="4" cols="50"></textarea>
+            <button type="button" id="record_button">Start Recording</button>
+            <input type="hidden" name="audio_data" id="audio_data_input">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <script>
+        let recognition;
+        const recordButton = document.getElementById('record_button');
+        const audioDataInput = document.getElementById('audio_data_input');
+
+        recordButton.addEventListener('click', toggleRecording);
+
+        function toggleRecording() {
+            if (!recognition) {
+                // Initialize SpeechRecognition
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    recordButton.textContent = 'Stop Recording';
+                };
+
+                recognition.onend = () => {
+                    recordButton.textContent = 'Start Recording';
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    const currentText = document.querySelector('textarea[name="description"]').value;
+                    document.querySelector('textarea[name="description"]').value = currentText + ' ' + transcript;
+                };
+            }
+
+            if (recognition && recognition.state === 'listening') {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+    </script>
+</body>
+</html>
